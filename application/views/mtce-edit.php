@@ -1,5 +1,12 @@
 <h2>Menu Maintenance - {action}</h2>
-<form action="/crud/save" method="post">
+{error_messages}
+{fpicture}
+<div class="form-group">
+	<label for="replacement">Replacement picture</label>
+	<input type="file" id="replacement" name="replacement"/>
+</div>
+{fcategory}
+<form action="/crud/save" method="post" enctype="multipart/form-data">
 {fid}
 {fname}
 {fdescription}
