@@ -10,7 +10,15 @@ method ended up like this:
 Introduction to Internet Software Development (http://www.bcit.ca/study/outlines/20163035498) is a
 course from B.C. Institute of Technology (http://www.bcit.ca/cas/computing/) ✉ (mailto:jim_parry@bcit.ca)
 
-16. Added add button and function, updated manternace form and set edit method -@CK
+22. Cleaned up CRUD controller code, and overviewed it. - @Thach
+21. Added Picture replacement to view, and a function for picture-replacement, and edited save. - @Thach
+
+20. Modified edit, save, mtce-edit, validation - @Thach
+19. Added show_any_errors function - @Thach
+18. Added mtce-errors.php, and constructor with error_messages - @Thach
+17. Applied corrections to caboose-texfield.php input, crud.php-edit code. - @Thach
+
+16. Added add button and function, updated manternace form and set edit method - @CK
 15. Added a button and function for deletion - @CK
     
 14. Added save function to handle a submitted change - @Thach    
