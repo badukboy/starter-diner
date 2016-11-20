@@ -1,82 +1,92 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
-class Crud extends Application
-{
-	// constructor
-	function __construct()
-	{
+class Crud extends Application {
+	public function __construct() {
 		parent::__construct();
 		$this->error_messages = array();
+		$this->load->helper('formfields', 'form', 'url');
+        $this->load->library('form_validation');
 	}
-	public function index() {		
-		$this->data['pagebody'] = 'mtce';
-	
-		$result = '';
-			$this->data['userrole'] = $this->session->userdata('userrole');
-			if ($this->data['userrole'] == NULL) {
-				$this->data['userrole'] = '?';
-			}
-			else if($this->data['userrole'] == 'admin') {
-				$result = 'Admin entered';
-				$this->data['items'] = $this->menu->all();
-			}
-			else if($this->data['userrole'] == 'user') {
-				$result = 'Admin only no user';
-				$this->data['content'] = $result;
-			}
-
+    public function index() {
+    
+    	unset($_SESSION['key']);
+    	unset($_SESSION['record']);
+		$userrole = $this->session->userdata('userrole');
+		if ($userrole != 'admin') {
+			$message = 'You are not authorized to access this page. Go away';
+			$this->data['content'] = $message;
+			$this->render();
+			return;
+		} 
+		
+		$this->data['pagebody'] ='mtce';
+		$this->data['items'] = $this->Menu->all();
 		$this->render();
 	}
-	public function edit($id=null) {
-		//session
+	function edit($id=null) {
+	
+		// try the session first
 		$key = $this->session->userdata('key');
-		$record = $this->session->userdata('record');
+ 		$record = $this->session->userdata('record');
 		
-		//db
-		if(empty($record)){
-			$record = $this->menu->get($id);
+ 		$this->data['action'] = (empty($record)) ? 'Editing' : 'Adding';
+ 		
+		// if not there, get them from the database
+		if (empty($record)) {
+			$record = $this->Menu->get($id);
 			$key = $id;
 			$this->session->set_userdata('key',$id);
 			$this->session->set_userdata('record',$record);
 		}
 		
+		// build the form fields
 		$this->data['fid'] = makeTextField('Menu code', 'id', $record->id);
 		$this->data['fname'] = makeTextField('Item name', 'name', $record->name);
-		$this->data['fdescription'] = makeTextField('Description', 'description', $record->description);
 		$this->data['fdescription'] = makeTextArea('Description', 'description', $record->description);
 		$this->data['fprice'] = makeTextField('Price, each', 'price', $record->price);
 		$this->data['fpicture'] = makeTextField('Item image', 'picture', $record->picture);
-		$this->data['fcategory'] = makeTextField('Category', 'category', $record->category);
-		$cats = $this->categories->all(); // get an array of category objects
-		foreach($cats as $code => $category) // make it into an associative array
+		
+		$cats = $this->Categories->all(); // get an array of category objects
+		foreach ($cats as $code => $category) // make it into an associative array
 			$codes[$category->id] = $category->name;
-		$this->data['fcategory'] = makeCombobox('Category', 'category', $record->category,$codes);
+		$this->data['fcategory'] = makeCombobox('Category', 'category', $record->category, $codes);
+		
 		$this->data['zsubmit'] = makeSubmitButton('Save', 'Submit changes');
-		$this->data['action'] = (empty($key)) ? 'Adding' : 'Editing';
-                
+		
+		// show the editing form
 		$this->data['pagebody'] = "mtce-edit";
 		$this->show_any_errors();
 		$this->render();
 	}
-	public function cancel() {
+	function cancel() {
 		$this->session->unset_userdata('key');
 		$this->session->unset_userdata('record');
 		$this->index();
 	}
-	public function save() {        
-		// try the session first        
-		$key = $this->session->userdata('key');        
-		$record = $this->session->userdata('record');        
-		// if not there, nothing is in progress        
-		if (empty($record)) {                
+	function delete() {
+		$key = $this->session->userdata('key');
+		$record = $this->session->userdata('record');
+		// only delete if editing an existing record
+		if (! empty($record)) {
+			$this->Menu->delete($key);
+		}
+		$this->index();
+	}
+	
+	function save() {
+	// try the session first
+		$key = $this->session->userdata('key');
+		$record = $this->session->userdata('record');
+		// if not there, nothing is in progress
+		if (empty($record)) {
 			$this->index();
 			return;
-		}        
+		}
 		// update our data transfer object
 		$incoming = $this->input->post();
 		foreach(get_object_vars($record) as $index => $value)
 			if (isset($incoming[$index]))
-				$record->$index = $incoming[$index];
+		$record->$index = $incoming[$index];
 		$newguy = $_FILES['replacement'];
 		if (!empty($newguy['name'])) {
 			$record->picture = $this->replace_picture ();
@@ -84,17 +94,18 @@ class Crud extends Application
 				$_POST['picture'] = $record->picture; // override picture name
 		}
 		$this->session->set_userdata('record',$record);
-		// validate        
+		// validate
 		$this->load->library('form_validation');
-		$this->form_validation->set_rules($this->menu->rules());
+		$this->form_validation->set_rules($this->Menu->rules());
 		if ($this->form_validation->run() != TRUE)
 			$this->error_messages = $this->form_validation->error_array();
 		// check menu code for additions
 		if ($key == null)
-			if ($this->menu->exists($record->id))
+			if ($this->Menu->exists($record->id))
 				$this->error_messages[] = 'Duplicate key adding new menu item';
-		if (! $this->categories->exists($record->category))
+		if (! $this->Categories->exists($record->category))
 			$this->error_messages[] = 'Invalid category code: ' . $record->category;
+		
 		// save or not
 		if (! empty($this->error_messages)) {
 			$this->edit();
@@ -102,30 +113,13 @@ class Crud extends Application
 		}
 		// update our table, finally!
 		if ($key == null)
-			$this->menu->add($record);
+			$this->Menu->add($record);
 		else
-			$this->menu->update($record);
+			$this->Menu->update($record);
 		// and redisplay the list
 		$this->index();
 	}
-    public function delete() {
-        $key = $this->session->userdata('key');
-		$record = $this->session->userdata('record');
-		// only delete if editing an existing record
-		if (! empty($record)) {
-			$this->menu->delete($key);
-		}
-		$this->index();
-    }
-        
-    public function add() {
-		$key = NULL;
-		$record = $this->menu->create();
-		$this->session->set_userdata('key', $key);
-		$this->session->set_userdata('record', $record);
-		$this->edit();
-	}
-	public function show_any_errors() {
+	function show_any_errors() {
 		$result = '';
 		if (empty($this->error_messages)) {
 			$this->data['error_messages'] = '';
@@ -135,28 +129,22 @@ class Crud extends Application
 		foreach($this->error_messages as $onemessage)
 			$result .= $onemessage . '<br/>';
 		// and wrap these per our view fragment
-		$this->data['error_messages'] = $this->parser->parse('mtce-errors',
-			 ['error_messages' => $result], true);
+		$this->data['error_messages'] = $this->parser->parse('mtce-errors',['error_messages' => $result], true);
 	}
 	// handle uploaded image, and use its name as the picture name
-	public function replace_picture() {
-		$config = [
-		 'upload_path' => './images', // relative to front controller
-		 'allowed_types' => 'gif|jpg|jpeg|png',
-		 'max_size' => 100, // 100KB should be enough for our graphical menu
-		 'max_width' => 256,
-		 'max_height' => 256, // actually, we want exactly 256x256
-		 'min_width' => 256,
-		 'min_height' => 256, // fixed it
-		 'remove_spaces' => TRUE, // eliminate any spaces in the name
-		 'overwrite' => TRUE, // overwrite existing image
-		];
-		$this->load->library('upload', $config);
+	function replace_picture() {
+		$this->load->library('upload', $this->Menu->rule_picture());
 		if (!$this->upload->do_upload('replacement')) {
 			$this->error_messages[] = $this->upload->display_errors();
 			return NULL;
 		} else
 			return $this->upload->data('file_name');
 	}
-}
+	function add() {
+		$key = NULL;
+		$record = $this->Menu->create();
+		$this->session->set_userdata('key', $key);
+		$this->session->set_userdata('record', $record);
+		$this->edit();
+	}
 }

@@ -1,9 +1,12 @@
 <?php
-
-defined('BASEPATH') OR exit('No direct script access allowed');
-
+/**
+ * Description of Toggle
+ */
 class Toggle extends Application {
 	public function index()	{
+                $this->load->helper('form');
+                $this->load->helper('url');
+                
 		$origin = $_SERVER['HTTP_REFERER'];
 		$role = $this->session->userdata('userrole');
 		if ($role == 'user') $role = 'admin';
