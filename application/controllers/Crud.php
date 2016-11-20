@@ -159,3 +159,4 @@ class Crud extends Application
 			return $this->upload->data('file_name');
 	}
 }
+}
