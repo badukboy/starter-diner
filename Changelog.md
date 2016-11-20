@@ -10,6 +10,12 @@ method ended up like this:
 Introduction to Internet Software Development (http://www.bcit.ca/study/outlines/20163035498) is a
 course from B.C. Institute of Technology (http://www.bcit.ca/cas/computing/) ✉ (mailto:jim_parry@bcit.ca)
 
+32. Fixed order summary   
+31. Showed order receipt with total
+30. Added a checkout and clear functions to finalize an order or clear it using session data   
+29. Added new method addedItem()   
+28. Added Cancel method to shopping controller    
+27. Fixed lab5.sql adding menu query - @ck
     
     ---- lab 8 start
 26. updated summary view. Addded examine function to shopping controller. -@ck
