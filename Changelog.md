@@ -10,7 +10,8 @@ method ended up like this:
 Introduction to Internet Software Development (http://www.bcit.ca/study/outlines/20163035498) is a
 course from B.C. Institute of Technology (http://www.bcit.ca/cas/computing/) ✉ (mailto:jim_parry@bcit.ca)
 
-23. "updated shopping constructor, index function. Added summarize function, keep_shopping function, neworder function, cancel function, and add function to shopping controller. Added Order.php to models with a constructor and addItem method. Added summary.php to views. Updated template-shopping and menuitem-shop in views." - @Thach
+24. added function receipt to order model. Updated keep_shopping, add in shopping controller. Updated template-shopping model. Added validate and save function to order model. Updated checkout function in shopping controller. - @Thach
+23. updated shopping constructor, index function. Added summarize function, keep_shopping function, neworder function, cancel function, and add function to shopping controller. Added Order.php to models with a constructor and addItem method. Added summary.php to views. Updated template-shopping and menuitem-shop in views. - @Thach
 
 22. Cleaned up CRUD controller code, and overviewed it. - @Thach
 21. Added Picture replacement to view, and a function for picture-replacement, and edited save. - @Thach
