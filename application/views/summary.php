@@ -5,8 +5,8 @@
 {orders}
     <tr>
             <td><a href="/shopping/examine/{number}">{number}</a></td>
-			<td>{datetime}</td>
-			<td>{total}</td>
+	    <td>{datetime}</td>
+            <td>{total}</td>
     </tr>
 {/orders}
 </table>
