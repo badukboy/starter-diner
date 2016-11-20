@@ -2,12 +2,27 @@
 class Order extends CI_Model {
 
         // constructor
-        function __construct() {
-            parent::__construct();
-            $this->number = 0;
-            $this->datetime = null;
-            $this->items = array();
-        }
+		function __construct($state=null) {
+			parent::__construct();
+			if (is_array($state)) {
+				foreach($state as $key => $value)
+					$this->$key = $value;
+			} elseif ($state != null) {
+				$xml = simplexml_load_file($state);
+				$this->number = (int) $xml->number;
+				$this->datetime = (string) $xml->datetime;
+				$this->items = array();
+				foreach ($xml->item as $item) {
+					$key = (string) $item->code;
+					$quantity = (int) $item->quantity;
+					$this->items[$key] = $quantity;
+				}
+			} else {
+				$this->number = 0;
+				$this->datetime = null;
+				$this->items = array();
+			}
+		}
 		public function addItem($which=null) {
 		// ignore empty requests
 			if ($which == null) return;
@@ -75,4 +90,12 @@ class Order extends CI_Model {
 			// save it
 			$xml->asXML('../data/order' . $this->number . '.xml');
 		}
+		public function total() {
+			$total = 0;
+			foreach($this->items as $key => $value) {
+				$menu = $this->menu->get($key);
+				$total += $value * $menu->price;
+			}
+			return $total;
+		} 
 }

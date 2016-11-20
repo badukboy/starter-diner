@@ -26,6 +26,23 @@ class Shopping extends Application
 		else $this->summarize();
 	}
 	public function summarize() {
+		// identify all of the order files
+		$this->load->helper('directory');
+		$candidates = directory_map('../data/');
+		$parms = array();
+		foreach ($candidates as $filename) {
+		   if (substr($filename,0,5) == 'order') {
+			   // restore that order object
+			   $order = new Order ('../data/' . $filename);
+			// setup view parameters
+			   $parms[] = array(
+				   'number' => $order->number,
+				   'datetime' => $order->datetime,
+				   'total' => $order->total()
+					   );
+			}
+		}
+		$this->data['orders'] = $parms;
 		$this->data['pagebody'] = 'summary';
 		$this->render('template');  // use the default template
 	}
@@ -88,5 +105,10 @@ class Shopping extends Application
 		$this->session->unset_userdata('order');
 		redirect('/shopping');
 	}
-
+	public function examine($which) {
+		$order = new Order ('../data/order' . $which . '.xml');
+		$stuff = $order->receipt();
+		$this->data['content'] = $this->parsedown->parse($stuff);
+		$this->render();
+	}
 }
