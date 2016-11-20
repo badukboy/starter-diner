@@ -7,22 +7,24 @@ class Crud extends Application {
 		$this->load->helper('formfields', 'form', 'url');
         $this->load->library('form_validation');
 	}
-    public function index() {
+        
+        public function index() {
     
-    	unset($_SESSION['key']);
-    	unset($_SESSION['record']);
-		$userrole = $this->session->userdata('userrole');
-		if ($userrole != 'admin') {
-			$message = 'You are not authorized to access this page. Go away';
-			$this->data['content'] = $message;
-			$this->render();
-			return;
-		} 
-		
-		$this->data['pagebody'] ='mtce';
-		$this->data['items'] = $this->Menu->all();
-		$this->render();
+            unset($_SESSION['key']);
+            unset($_SESSION['record']);
+                    $userrole = $this->session->userdata('userrole');
+                    if ($userrole != 'admin') {
+                            $message = 'This page is only administrator.';
+                            $this->data['content'] = $message;
+                            $this->render();
+                            return;
+                    } 
+
+                    $this->data['pagebody'] ='mtce';
+                    $this->data['items'] = $this->Menu->all();
+                    $this->render();
 	}
+        
 	function edit($id=null) {
 	
 		// try the session first
@@ -86,14 +88,17 @@ class Crud extends Application {
 		$incoming = $this->input->post();
 		foreach(get_object_vars($record) as $index => $value)
 			if (isset($incoming[$index]))
-		$record->$index = $incoming[$index];
-		$newguy = $_FILES['replacement'];
-		if (!empty($newguy['name'])) {
+                            $record->$index = $incoming[$index];
+                
+                $newguy = $_FILES['replacement'];
+                if (!empty($newguy['name'])) {                    
 			$record->picture = $this->replace_picture ();
-			if ($record->picture != null)
+			if ($record->picture != null){
 				$_POST['picture'] = $record->picture; // override picture name
+                        }
 		}
 		$this->session->set_userdata('record',$record);
+                
 		// validate
 		$this->load->library('form_validation');
 		$this->form_validation->set_rules($this->Menu->rules());
@@ -131,15 +136,27 @@ class Crud extends Application {
 		// and wrap these per our view fragment
 		$this->data['error_messages'] = $this->parser->parse('mtce-errors',['error_messages' => $result], true);
 	}
-	// handle uploaded image, and use its name as the picture name
-	function replace_picture() {
-		$this->load->library('upload', $this->Menu->rule_picture());
-		if (!$this->upload->do_upload('replacement')) {
-			$this->error_messages[] = $this->upload->display_errors();
-			return NULL;
-		} else
-			return $this->upload->data('file_name');
-	}
+	 //handle uploaded image, and use its name as the picture name
+        function replace_picture() {
+            $config = [
+                'upload_path' => './images', //relative to front controller
+                'allowed_types' => 'gif|jpg|jpeg|png',
+                'max_size' => 100, //100KB should be enough for our graphical menu
+                'max_width' => 256,
+                'max_height' => 256, // actually, we want exactly 256x256
+                'min_width' => 256,
+                'min_height' => 256, // fixed it
+                'remove_spaces' => TRUE, // eliminate any spaces in the name
+                'overwrite' => TRUE, //overwrite existing image
+            ];
+            $this->load->library('upload', $config);
+            if (!$this->upload->do_upload('replacement')) {
+                $this->error_message[] = $this->upload->display_errors();
+                return NULL;
+            } else
+                return $this->upload->data('file_name');
+        }
+        
 	function add() {
 		$key = NULL;
 		$record = $this->Menu->create();

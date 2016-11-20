@@ -61,6 +61,7 @@ class Order extends CI_Model {
         }
         // and establish the checkout time
         $this->datetime = date(DATE_ATOM);
+        
         // start empty
         $xml = new SimpleXMLElement('<order/>');
         // add the main properties
